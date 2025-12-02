@@ -1,0 +1,36 @@
+{
+  "short_name": "VeggieQuote",
+  "name": "VeggieQuote AI Order Manager",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2909/2909808.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2909/2909808.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#16a34a",
+  "background_color": "#ffffff",
+  "share_target": {
+    "action": "/share-target/",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "media",
+          "accept": ["image/*", ".png", ".jpg", ".jpeg", ".webp"]
+        }
+      ]
+    }
+  }
+}

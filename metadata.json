@@ -1,0 +1,7 @@
+{
+  "name": "Copy of VeggieQuote AI",
+  "description": "Instantly generate price quotes from vegetable lists using Gemini Flash.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
