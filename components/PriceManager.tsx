@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PriceItem } from '../types';
-import { Plus, Trash2, Edit2, Save, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, Save, X, Tag } from 'lucide-react';
 
 interface Props {
   prices: PriceItem[];
@@ -46,37 +46,43 @@ export const PriceManager: React.FC<Props> = ({ prices, setPrices }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 mb-20">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-gray-800">Daily Prices</h2>
+    <div className="space-y-4">
+      {/* Header Action */}
+      <div className="flex justify-between items-center px-1">
+        <h2 className="text-lg font-bold text-slate-800">Daily Prices</h2>
         <button 
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded-full text-sm font-medium hover:bg-green-700 transition"
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all ${isAdding ? 'bg-slate-200 text-slate-600' : 'bg-green-600 text-white shadow-green-200 hover:shadow-md'}`}
         >
-          <Plus size={16} /> Add Item
+          {isAdding ? <X size={18} /> : <Plus size={18} />}
+          {isAdding ? 'Cancel' : 'New Item'}
         </button>
       </div>
 
       {isAdding && (
-        <div className="bg-green-50 p-3 rounded-lg mb-4 border border-green-200">
-          <div className="grid grid-cols-2 gap-2 mb-2">
-            <input 
-              placeholder="Item Name" 
-              className="p-2 border rounded"
-              value={newForm.name || ''}
-              onChange={e => setNewForm({...newForm, name: e.target.value})}
-            />
+        <div className="bg-white p-5 rounded-2xl shadow-lg border border-green-100 animate-in">
+          <div className="flex items-center gap-2 mb-4 text-green-700 font-semibold text-sm">
+             <Tag size={16} /> Add New Vegetable
+          </div>
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className="col-span-2">
+                <input 
+                  placeholder="Item Name (e.g. Potato)" 
+                  className="w-full p-3 bg-slate-50 border-0 rounded-xl focus:ring-2 focus:ring-green-500 font-medium placeholder:text-slate-400"
+                  value={newForm.name || ''}
+                  onChange={e => setNewForm({...newForm, name: e.target.value})}
+                  autoFocus
+                />
+            </div>
             <input 
               type="number" 
               placeholder="Price" 
-              className="p-2 border rounded"
+              className="p-3 bg-slate-50 border-0 rounded-xl focus:ring-2 focus:ring-green-500 font-medium"
               value={newForm.price || ''}
               onChange={e => setNewForm({...newForm, price: parseFloat(e.target.value)})}
             />
-          </div>
-          <div className="flex gap-2">
-            <select 
-              className="p-2 border rounded flex-1"
+             <select 
+              className="p-3 bg-slate-50 border-0 rounded-xl focus:ring-2 focus:ring-green-500 font-medium text-slate-600"
               value={newForm.unit}
               onChange={e => setNewForm({...newForm, unit: e.target.value as any})}
             >
@@ -86,33 +92,32 @@ export const PriceManager: React.FC<Props> = ({ prices, setPrices }) => {
               <option value="bunch">Per bunch</option>
               <option value="dozen">Per dozen</option>
             </select>
-            <button onClick={handleAdd} className="bg-green-600 text-white px-4 rounded font-medium">Save</button>
-            <button onClick={() => setIsAdding(false)} className="text-gray-500 px-2">Cancel</button>
           </div>
+          <button onClick={handleAdd} className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold shadow-lg shadow-slate-200 hover:bg-slate-800 transition">Save Item</button>
         </div>
       )}
 
-      <div className="divide-y">
+      <div className="space-y-2">
         {prices.map(item => (
-          <div key={item.id} className="py-3 flex items-center justify-between">
+          <div key={item.id} className="group bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
             {editingId === item.id ? (
-              <div className="flex-1 flex flex-col gap-2">
+              <div className="flex-1 flex flex-col gap-3">
                 <div className="flex gap-2">
                    <input 
-                    className="p-1 border rounded w-full font-bold"
+                    className="p-2 bg-slate-50 border rounded-lg w-full font-bold text-slate-800"
                     value={editForm.name}
                     onChange={e => setEditForm({...editForm, name: e.target.value})}
                   />
                   <input 
                     type="number"
-                    className="p-1 border rounded w-20"
+                    className="p-2 bg-slate-50 border rounded-lg w-24 font-bold text-slate-800"
                     value={editForm.price}
                     onChange={e => setEditForm({...editForm, price: parseFloat(e.target.value)})}
                   />
                 </div>
-                 <div className="flex gap-2 justify-end">
+                 <div className="flex gap-2 justify-end items-center">
                    <select 
-                      className="p-1 border rounded text-sm"
+                      className="p-2 bg-slate-50 border rounded-lg text-sm text-slate-600"
                       value={editForm.unit}
                       onChange={e => setEditForm({...editForm, unit: e.target.value as any})}
                     >
@@ -122,19 +127,28 @@ export const PriceManager: React.FC<Props> = ({ prices, setPrices }) => {
                       <option value="bunch">/bunch</option>
                       <option value="dozen">/dozen</option>
                     </select>
-                    <button onClick={handleSaveEdit} className="text-green-600"><Save size={18} /></button>
-                    <button onClick={() => setEditingId(null)} className="text-gray-500"><X size={18} /></button>
+                    <div className="flex gap-1 ml-2">
+                        <button onClick={handleSaveEdit} className="p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200"><Save size={18} /></button>
+                        <button onClick={() => setEditingId(null)} className="p-2 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200"><X size={18} /></button>
+                    </div>
                  </div>
               </div>
             ) : (
               <>
-                <div className="flex-1">
-                  <div className="font-semibold text-gray-800">{item.name}</div>
-                  <div className="text-sm text-gray-500">₹{item.price} / {item.unit}</div>
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center text-green-600 font-bold text-sm">
+                    {item.name.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="font-bold text-slate-800 text-base">{item.name}</div>
+                    <div className="text-xs text-slate-500 font-medium">
+                         <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">₹{item.price}</span> / {item.unit}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex gap-3">
-                  <button onClick={() => handleEditClick(item)} className="text-gray-400 hover:text-blue-500"><Edit2 size={18} /></button>
-                  <button onClick={() => handleDelete(item.id)} className="text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
+                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => handleEditClick(item)} className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"><Edit2 size={18} /></button>
+                  <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"><Trash2 size={18} /></button>
                 </div>
               </>
             )}

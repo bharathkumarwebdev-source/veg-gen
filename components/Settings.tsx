@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { QuoteSettings } from '../types';
-import { MessageCircle, Key, Smartphone, AlertTriangle, Zap, Gauge } from 'lucide-react';
+import { MessageCircle, Key, Smartphone, AlertTriangle, Zap, Gauge, Type, Layout, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface Props {
   settings: QuoteSettings;
@@ -25,180 +25,196 @@ export const Settings: React.FC<Props> = ({ settings, setSettings }) => {
   const [showApiConfig, setShowApiConfig] = useState(false);
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 mb-20">
-      <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-        Message Configuration
-      </h2>
-
-      <div className="space-y-6">
-        {/* Header Text */}
-        <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Header Text</label>
-            <input 
-                type="text" 
-                value={settings.headerText}
-                onChange={(e) => handleChange('headerText', e.target.value)}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition"
-                placeholder="e.g. Vegetable Bill"
-            />
-        </div>
-
-        {/* Footer Text */}
-        <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Footer Text</label>
-            <textarea 
-                value={settings.footerText}
-                onChange={(e) => handleChange('footerText', e.target.value)}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition h-24 resize-none"
-                placeholder="e.g. Thank you for shopping!"
-            />
-        </div>
-
-        {/* Toggles */}
-        <div className="bg-gray-50 rounded-lg p-4 space-y-4 border border-gray-100">
-            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Include Fields</h3>
-            
-            <label className="flex items-center justify-between cursor-pointer">
-                <span className="text-gray-800 font-medium">Show Date</span>
-                <input 
-                    type="checkbox" 
-                    checked={settings.showDate}
-                    onChange={(e) => handleChange('showDate', e.target.checked)}
-                    className="w-6 h-6 accent-green-600 rounded"
-                />
-            </label>
-
-            <label className="flex items-center justify-between cursor-pointer">
-                <span className="text-gray-800 font-medium">Show Customer Details</span>
-                <input 
-                    type="checkbox" 
-                    checked={settings.showCustomer}
-                    onChange={(e) => handleChange('showCustomer', e.target.checked)}
-                    className="w-6 h-6 accent-green-600 rounded"
-                />
-            </label>
-
-            <label className="flex items-center justify-between cursor-pointer">
-                <span className="text-gray-800 font-medium">Show Total Amount</span>
-                <input 
-                    type="checkbox" 
-                    checked={settings.showTotal}
-                    onChange={(e) => handleChange('showTotal', e.target.checked)}
-                    className="w-6 h-6 accent-green-600 rounded"
-                />
-            </label>
-        </div>
-
-        {/* Automation Section */}
-        <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 space-y-4">
-             <h3 className="text-sm font-semibold text-blue-700 uppercase tracking-wider flex items-center gap-1">
-                <Zap size={16} /> Automation
-             </h3>
-             
-             <label className="flex items-start justify-between cursor-pointer gap-2">
-                <div className="flex flex-col">
-                    <span className="text-gray-800 font-bold">Auto-Send / Redirect</span>
-                    <span className="text-xs text-gray-600">
-                        Automatically trigger send actions when a phone number is detected.
-                    </span>
-                </div>
-                <input 
-                    type="checkbox" 
-                    checked={settings.autoRedirectWhatsApp}
-                    onChange={(e) => handleChange('autoRedirectWhatsApp', e.target.checked)}
-                    className="w-6 h-6 accent-green-600 rounded shrink-0 mt-1"
-                />
-            </label>
-
-            {settings.autoRedirectWhatsApp && (
-                <label className="flex items-start justify-between cursor-pointer gap-2 pt-2 border-t border-blue-100">
-                    <div className="flex flex-col">
-                        <span className="text-gray-800 font-bold flex items-center gap-1">
-                             <Gauge size={14} className="text-red-500"/> Instant Send (No Timer)
-                        </span>
-                        <span className="text-xs text-gray-600">
-                            Skip the 2-second countdown. Sends immediately.
-                        </span>
-                    </div>
+    <div className="space-y-6">
+      
+      {/* Appearance Card */}
+      <section className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+        <h3 className="text-slate-800 font-bold mb-4 flex items-center gap-2">
+            <Layout size={20} className="text-green-600" />
+            <span className="text-lg">Message Format</span>
+        </h3>
+        
+        <div className="space-y-5">
+            <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Header</label>
+                <div className="relative">
+                    <Type className="absolute left-3 top-3 text-slate-400" size={18} />
                     <input 
-                        type="checkbox" 
-                        checked={settings.instantSend}
-                        onChange={(e) => handleChange('instantSend', e.target.checked)}
-                        className="w-6 h-6 accent-red-500 rounded shrink-0 mt-1"
+                        type="text" 
+                        value={settings.headerText}
+                        onChange={(e) => handleChange('headerText', e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 bg-slate-50 border-0 rounded-xl focus:ring-2 focus:ring-green-500 font-medium outline-none transition"
+                        placeholder="e.g. Vegetable Bill"
                     />
-                </label>
-            )}
-        </div>
+                </div>
+            </div>
 
-        {/* WhatsApp Cloud API Section */}
-        <div className="border border-green-200 rounded-lg overflow-hidden">
-            <button 
-                onClick={() => setShowApiConfig(!showApiConfig)}
-                className="w-full flex items-center justify-between p-4 bg-green-50 text-green-900 font-medium"
-            >
-                <div className="flex items-center gap-2">
-                    <MessageCircle size={20} />
-                    WhatsApp Cloud API (Advanced)
-                </div>
-                <div className="text-xs bg-green-200 px-2 py-1 rounded">
-                    {settings.whatsappApi.enabled ? 'Enabled' : 'Disabled'}
-                </div>
-            </button>
+            <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Footer</label>
+                <textarea 
+                    value={settings.footerText}
+                    onChange={(e) => handleChange('footerText', e.target.value)}
+                    className="w-full p-4 bg-slate-50 border-0 rounded-xl focus:ring-2 focus:ring-green-500 font-medium outline-none transition h-24 resize-none leading-relaxed"
+                    placeholder="e.g. Thank you for shopping!"
+                />
+            </div>
+
+            <div className="pt-2 grid gap-4">
+                <Toggle 
+                    label="Show Date" 
+                    checked={settings.showDate} 
+                    onChange={(v) => handleChange('showDate', v)} 
+                />
+                <Toggle 
+                    label="Show Customer Details" 
+                    checked={settings.showCustomer} 
+                    onChange={(v) => handleChange('showCustomer', v)} 
+                />
+                <Toggle 
+                    label="Show Total Amount" 
+                    checked={settings.showTotal} 
+                    onChange={(v) => handleChange('showTotal', v)} 
+                />
+            </div>
+        </div>
+      </section>
+
+      {/* Automation Card */}
+      <section className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl p-6 shadow-lg shadow-blue-200 text-white">
+        <h3 className="font-bold mb-4 flex items-center gap-2 text-white">
+            <Zap size={20} className="text-yellow-300 fill-yellow-300" />
+            <span className="text-lg">Automation</span>
+        </h3>
+        
+        <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm border border-white/10 space-y-4">
+             <Toggle 
+                label="Auto-Send / Redirect" 
+                checked={settings.autoRedirectWhatsApp} 
+                onChange={(v) => handleChange('autoRedirectWhatsApp', v)}
+                dark
+                description="Trigger send action when phone # is found"
+            />
             
-            {showApiConfig && (
-                <div className="p-4 bg-white space-y-4 animate-fadeIn">
-                    <div className="flex items-center gap-2 bg-yellow-50 p-3 rounded text-sm text-yellow-800 border border-yellow-200">
-                        <AlertTriangle size={16} className="shrink-0" />
-                        <p>Requires a Meta Developer Account and configured app. Tokens are stored locally in your browser.</p>
-                    </div>
-
-                    <label className="flex items-center justify-between cursor-pointer py-2">
-                        <span className="text-gray-800 font-medium">Enable API Integration</span>
-                        <input 
-                            type="checkbox" 
-                            checked={settings.whatsappApi.enabled}
-                            onChange={(e) => handleApiChange('enabled', e.target.checked)}
-                            className="w-6 h-6 accent-green-600 rounded"
-                        />
-                    </label>
-
-                    {settings.whatsappApi.enabled && (
-                        <>
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-500 mb-1 flex items-center gap-1">
-                                    <Smartphone size={12} /> Phone Number ID
-                                </label>
-                                <input 
-                                    type="text" 
-                                    value={settings.whatsappApi.phoneNumberId}
-                                    onChange={(e) => handleApiChange('phoneNumberId', e.target.value)}
-                                    className="w-full p-2 border rounded font-mono text-sm"
-                                    placeholder="e.g. 104523..."
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-500 mb-1 flex items-center gap-1">
-                                    <Key size={12} /> Access Token
-                                </label>
-                                <input 
-                                    type="password" 
-                                    value={settings.whatsappApi.accessToken}
-                                    onChange={(e) => handleApiChange('accessToken', e.target.value)}
-                                    className="w-full p-2 border rounded font-mono text-sm"
-                                    placeholder="e.g. EAAG..."
-                                />
-                            </div>
-                        </>
-                    )}
+            {settings.autoRedirectWhatsApp && (
+                <div className="pt-4 border-t border-white/10 animate-in">
+                     <Toggle 
+                        label="Instant Send (No Timer)" 
+                        checked={settings.instantSend} 
+                        onChange={(v) => handleChange('instantSend', v)}
+                        dark
+                        icon={<Gauge size={16} />}
+                        activeColor="bg-red-500"
+                        description="Skip the 2s safety countdown"
+                    />
                 </div>
             )}
         </div>
+      </section>
 
-        <div className="text-xs text-gray-400 text-center pt-4">
-            Settings are saved automatically.
-        </div>
+      {/* WhatsApp API Card */}
+      <section className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <button 
+            onClick={() => setShowApiConfig(!showApiConfig)}
+            className="w-full p-6 flex items-center justify-between bg-white hover:bg-slate-50 transition-colors"
+        >
+            <div className="flex items-center gap-3">
+                <div className="bg-green-100 p-2 rounded-lg text-green-700">
+                    <MessageCircle size={20} />
+                </div>
+                <div className="text-left">
+                    <div className="font-bold text-slate-800">WhatsApp Cloud API</div>
+                    <div className="text-xs text-slate-500">Advanced Integration</div>
+                </div>
+            </div>
+            {showApiConfig ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
+        </button>
+        
+        {showApiConfig && (
+            <div className="p-6 pt-0 border-t border-slate-100 bg-slate-50/50 space-y-5 animate-in">
+                <div className="flex items-start gap-3 bg-yellow-50 p-4 rounded-xl text-xs text-yellow-800 border border-yellow-200/60 leading-relaxed">
+                    <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                    <p>Meta Developer configuration required. Tokens are stored locally on this device only.</p>
+                </div>
+
+                <Toggle 
+                    label="Enable API Integration" 
+                    checked={settings.whatsappApi.enabled} 
+                    onChange={(v) => handleApiChange('enabled', v)}
+                />
+
+                {settings.whatsappApi.enabled && (
+                    <div className="space-y-4 animate-in">
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                                <Smartphone size={12} /> Phone Number ID
+                            </label>
+                            <input 
+                                type="text" 
+                                value={settings.whatsappApi.phoneNumberId}
+                                onChange={(e) => handleApiChange('phoneNumberId', e.target.value)}
+                                className="w-full p-3 border-0 bg-white shadow-sm ring-1 ring-slate-200 rounded-xl font-mono text-sm focus:ring-2 focus:ring-green-500 outline-none"
+                            />
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                                <Key size={12} /> Access Token
+                            </label>
+                            <input 
+                                type="password" 
+                                value={settings.whatsappApi.accessToken}
+                                onChange={(e) => handleApiChange('accessToken', e.target.value)}
+                                className="w-full p-3 border-0 bg-white shadow-sm ring-1 ring-slate-200 rounded-xl font-mono text-sm focus:ring-2 focus:ring-green-500 outline-none"
+                            />
+                        </div>
+                    </div>
+                )}
+            </div>
+        )}
+      </section>
+
+      <div className="text-center pb-6">
+        <p className="text-xs text-slate-400">Settings autosave to local storage</p>
       </div>
     </div>
   );
 };
+
+// Reusable Toggle Component
+const Toggle = ({ 
+    label, 
+    checked, 
+    onChange, 
+    dark = false, 
+    description, 
+    icon,
+    activeColor = 'bg-green-500' 
+}: { 
+    label: string, 
+    checked: boolean, 
+    onChange: (v: boolean) => void, 
+    dark?: boolean, 
+    description?: string,
+    icon?: React.ReactNode,
+    activeColor?: string
+}) => (
+    <label className="flex items-center justify-between cursor-pointer group">
+        <div className="flex flex-col">
+            <span className={`font-medium flex items-center gap-2 ${dark ? 'text-white' : 'text-slate-700'}`}>
+                {icon} {label}
+            </span>
+            {description && (
+                <span className={`text-xs mt-0.5 ${dark ? 'text-blue-100' : 'text-slate-400'}`}>{description}</span>
+            )}
+        </div>
+        <div className="relative">
+            <input 
+                type="checkbox" 
+                className="sr-only peer"
+                checked={checked}
+                onChange={(e) => onChange(e.target.checked)}
+            />
+            <div className={`w-11 h-6 rounded-full peer peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-offset-2 ${dark ? 'peer-focus:ring-blue-500 bg-white/20' : 'peer-focus:ring-green-300 bg-slate-200'} peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${checked ? activeColor.replace('bg-', 'peer-checked:bg-') : ''}`}></div>
+        </div>
+    </label>
+);

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Camera, Loader2, Upload, ClipboardPaste, Share2, Download } from 'lucide-react';
-import { PriceItem, Quote, OrderItem, ParsedOrder, QuoteSettings } from '../types';
+import { Camera, Loader2, Upload, ClipboardPaste, Share2, Image as ImageIcon } from 'lucide-react';
+import { PriceItem, Quote, ParsedOrder, QuoteSettings, OrderItem } from '../types';
 import { fileToGenerativePart, parseVegetableOrder } from '../services/geminiService';
 
 interface Props {
@@ -17,30 +17,21 @@ export const Scanner: React.FC<Props> = ({ prices, settings, onQuoteGenerated })
   const calculateQuote = useCallback((parsedData: ParsedOrder): Quote => {
     let total = 0;
     const items: OrderItem[] = parsedData.items.map((pItem: any) => {
-      // Find matching price item by name (case insensitive)
       const matchedPrice = prices.find(
         p => p.name.toLowerCase() === pItem.originalName.toLowerCase()
       );
 
       let cost = 0;
       if (matchedPrice) {
-        // Simple unit conversion logic
         let quantityInPriceUnit = pItem.quantity;
-        
-        // Convert g to kg if price is in kg
         if (pItem.unit === 'g' && matchedPrice.unit === 'kg') {
           quantityInPriceUnit = pItem.quantity / 1000;
-        } 
-        // Convert kg to g if price is in g
-        else if (pItem.unit === 'kg' && matchedPrice.unit === 'g') {
+        } else if (pItem.unit === 'kg' && matchedPrice.unit === 'g') {
            quantityInPriceUnit = pItem.quantity * 1000;
         }
-        
         cost = quantityInPriceUnit * matchedPrice.price;
       }
-
       total += cost;
-
       return {
         originalName: pItem.originalName,
         matchedItemId: matchedPrice?.id,
@@ -50,47 +41,26 @@ export const Scanner: React.FC<Props> = ({ prices, settings, onQuoteGenerated })
       };
     });
 
-    // --- Dynamic Text Generation based on Settings ---
     let rawText = "";
-
-    // Header
-    if (settings.headerText) {
-        rawText += `*${settings.headerText}*\n`;
-    }
-
-    // Date
+    if (settings.headerText) rawText += `*${settings.headerText}*\n`;
     if (settings.showDate) {
         const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
         rawText += `Date: ${dateStr}\n`;
     }
-    
-    // Customer
-    if (settings.showCustomer) {
-        if (parsedData.customerName) {
-            rawText += `Customer: *${parsedData.customerName}*\n`;
-        }
+    if (settings.showCustomer && parsedData.customerName) {
+        rawText += `Customer: *${parsedData.customerName}*\n`;
     }
-    
     rawText += `------------------------\n`;
-    
-    // Items
     items.forEach(item => {
       const priceStr = item.calculatedPrice > 0 ? `₹${item.calculatedPrice.toFixed(0)}` : 'N/A';
       rawText += `• ${item.originalName} (${item.quantity}${item.unit}): *${priceStr}*\n`;
     });
-    
     rawText += `------------------------\n`;
-    
-    // Total
     if (settings.showTotal) {
         rawText += `*Total Amount: ₹${Math.ceil(total)}*\n`;
         rawText += `------------------------\n`;
     }
-    
-    // Footer
-    if (settings.footerText) {
-        rawText += `${settings.footerText}`;
-    }
+    if (settings.footerText) rawText += `${settings.footerText}`;
 
     return { 
       id: Date.now().toString(),
@@ -109,13 +79,10 @@ export const Scanner: React.FC<Props> = ({ prices, settings, onQuoteGenerated })
         alert("Please upload an image file.");
         return;
     }
-
     setIsProcessing(true);
     try {
       const base64Data = await fileToGenerativePart(file);
-      const mimeType = file.type;
-      
-      const parsedData = await parseVegetableOrder(base64Data, mimeType, prices);
+      const parsedData = await parseVegetableOrder(base64Data, file.type, prices);
       const quote = calculateQuote(parsedData);
       onQuoteGenerated(quote);
     } catch (error) {
@@ -123,17 +90,15 @@ export const Scanner: React.FC<Props> = ({ prices, settings, onQuoteGenerated })
       console.error(error);
     } finally {
       setIsProcessing(false);
-      // Reset input
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }, [prices, calculateQuote, onQuoteGenerated]);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) processFile(file);
   };
 
-  // --- Share Target Logic (Service Worker Cache) ---
   useEffect(() => {
     const checkSharedFile = async () => {
       const params = new URLSearchParams(window.location.search);
@@ -143,11 +108,8 @@ export const Scanner: React.FC<Props> = ({ prices, settings, onQuoteGenerated })
           const response = await cache.match('shared-image');
           if (response) {
             const blob = await response.blob();
-            // Clean up cache
             await cache.delete('shared-image');
-            // Remove query param to prevent re-processing on reload
             window.history.replaceState({}, '', window.location.pathname);
-            
             const file = new File([blob], "shared-image.jpg", { type: blob.type });
             processFile(file);
           }
@@ -159,7 +121,6 @@ export const Scanner: React.FC<Props> = ({ prices, settings, onQuoteGenerated })
     checkSharedFile();
   }, [processFile]);
 
-  // --- Clipboard Paste Logic ---
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
       if (e.clipboardData?.files?.length) {
@@ -171,7 +132,6 @@ export const Scanner: React.FC<Props> = ({ prices, settings, onQuoteGenerated })
     return () => window.removeEventListener('paste', handlePaste);
   }, [processFile]);
 
-  // --- Drag & Drop Logic ---
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -200,90 +160,97 @@ export const Scanner: React.FC<Props> = ({ prices, settings, onQuoteGenerated })
                 return;
             }
         }
-        alert("No image found in clipboard. Copy an image from WhatsApp first.");
+        alert("No image found in clipboard.");
     } catch (err) {
-        console.error("Clipboard access failed:", err);
-        alert("To paste: Click anywhere on this page and press Ctrl+V (or Command+V).");
+        alert("Click anywhere and press Ctrl+V to paste.");
     }
   };
 
   return (
-    <div 
-      className={`flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow space-y-6 min-h-[60vh] transition-colors relative ${isDragging ? 'bg-green-100 border-2 border-dashed border-green-500' : ''}`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      {/* Drag Overlay */}
-      {isDragging && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-green-50/90 rounded-lg">
-           <div className="text-2xl font-bold text-green-700 animate-bounce">Drop Image Here!</div>
+    <div className="relative">
+      <div 
+        className={`bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-8 flex flex-col items-center justify-center min-h-[55vh] transition-all duration-300 border-2 ${isDragging ? 'border-green-500 bg-green-50 scale-[1.02]' : 'border-transparent'}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        <div className="relative mb-8 group">
+          <div className="absolute inset-0 bg-green-200 rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-full shadow-inner ring-1 ring-black/5">
+            <ImageIcon size={64} className="text-green-600/80 drop-shadow-sm" />
+          </div>
+          <div className="absolute -bottom-2 -right-2 bg-white p-2 rounded-full shadow-lg text-green-600">
+             <Camera size={20} />
+          </div>
         </div>
-      )}
 
-      <div className="text-center space-y-3">
-        <div className="bg-green-50 p-5 rounded-full inline-block ring-8 ring-green-50/50">
-          <Upload size={40} className="text-green-600" />
-        </div>
-        <h2 className="text-2xl font-bold text-gray-800">Scan Order</h2>
-        <p className="text-gray-500 text-sm max-w-xs mx-auto">
-          Upload photo, <strong>Drag & Drop</strong>, or Copy & Paste directly from WhatsApp.
+        <h2 className="text-2xl font-bold text-slate-800 mb-2">Scan Order</h2>
+        <p className="text-slate-500 text-center text-sm max-w-[240px] leading-relaxed mb-8">
+          Take a photo, drag & drop, or paste from WhatsApp directly.
         </p>
+
+        <input 
+          type="file" 
+          accept="image/*" 
+          className="hidden" 
+          ref={fileInputRef}
+          onChange={handleFileChange}
+        />
+
+        <div className="flex flex-col w-full max-w-xs gap-3">
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isProcessing}
+            className="group relative overflow-hidden flex items-center justify-center gap-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 px-6 rounded-2xl text-lg font-bold shadow-lg shadow-green-200 hover:shadow-green-300 hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+            {isProcessing ? (
+              <>
+                <Loader2 className="animate-spin" size={24} /> Processing...
+              </>
+            ) : (
+              <>
+                <Upload size={20} strokeWidth={2.5} /> Upload Photo
+              </>
+            )}
+          </button>
+
+          <button 
+            onClick={handlePasteClick}
+            disabled={isProcessing}
+            className="flex items-center justify-center gap-2 bg-white text-slate-600 border border-slate-200 hover:border-green-300 hover:bg-green-50/50 py-3.5 px-6 rounded-2xl font-semibold shadow-sm transition-all disabled:opacity-50"
+          >
+            <ClipboardPaste size={18} /> Paste from Clipboard
+          </button>
+        </div>
       </div>
 
-      <input 
-        type="file" 
-        accept="image/*" 
-        className="hidden" 
-        ref={fileInputRef}
-        onChange={handleFileChange}
-      />
-
-      <div className="flex flex-col w-full gap-3 max-w-xs">
-        {/* Main Upload Button */}
-        <button 
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isProcessing}
-          className="flex items-center justify-center gap-2 bg-green-600 text-white py-4 px-6 rounded-xl text-lg font-bold shadow-lg hover:bg-green-700 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
-        >
-          {isProcessing ? (
-            <>
-              <Loader2 className="animate-spin" /> Analyzing...
-            </>
-          ) : (
-            <>
-              <Camera /> Upload Photo
-            </>
-          )}
-        </button>
-
-        {/* Paste Button */}
-        <button 
-          onClick={handlePasteClick}
-          disabled={isProcessing}
-          className="flex items-center justify-center gap-2 bg-white text-green-700 border-2 border-green-100 py-3 px-6 rounded-xl font-semibold hover:bg-green-50 transition-colors disabled:opacity-50"
-        >
-          <ClipboardPaste size={20} /> Paste from Clipboard
-        </button>
-      </div>
-
-      {/* Pro Tip Section */}
-      <div className="mt-8 bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm text-gray-600 w-full max-w-sm">
-         <div className="font-bold flex items-center gap-2 mb-2 text-gray-800">
-             <Share2 size={16} /> Receieve Directly from WhatsApp:
+      {/* Tip Card */}
+      <div className="mt-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-4 text-white shadow-lg shadow-blue-200">
+         <div className="flex items-start gap-3">
+            <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm shrink-0">
+               <Share2 size={20} className="text-white" />
+            </div>
+            <div>
+               <h3 className="font-bold text-sm mb-1">WhatsApp Integration</h3>
+               <p className="text-xs text-blue-50 leading-relaxed opacity-90">
+                 Tap <strong>Share</strong> on any image in WhatsApp and select this app to generate a quote instantly.
+               </p>
+            </div>
          </div>
-         <ol className="list-decimal list-inside space-y-1 ml-1">
-             <li>Install this app (Add to Home Screen).</li>
-             <li>Open image in WhatsApp.</li>
-             <li>Tap <strong>Share</strong> and select <strong>VeggieQuote</strong>.</li>
-         </ol>
       </div>
 
+      {/* Loading Overlay */}
       {isProcessing && (
-        <div className="absolute inset-0 bg-white/90 z-20 flex flex-col items-center justify-center rounded-lg">
-          <Loader2 size={48} className="text-green-600 animate-spin mb-4" />
-          <div className="font-bold text-lg text-gray-800">Analyzing Order...</div>
-          <div className="text-sm text-gray-500 mt-1">Reading items & phone number</div>
+        <div className="fixed inset-0 bg-white/80 backdrop-blur-md z-50 flex flex-col items-center justify-center animate-in">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-green-100 border-t-green-500 rounded-full animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+               <div className="w-8 h-8 bg-white rounded-full shadow-sm"></div>
+            </div>
+          </div>
+          <div className="mt-6 font-bold text-xl text-slate-800 tracking-tight">Analyzing Order</div>
+          <div className="text-sm text-slate-500 mt-2">Reading items & prices...</div>
         </div>
       )}
     </div>
