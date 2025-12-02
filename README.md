@@ -4,40 +4,37 @@ VeggieQuote AI is a Progressive Web App (PWA) designed for vegetable shopkeepers
 
 ## Features
 
-- 📸 **AI Image Scanning**: Uses Gemini 2.5 Flash to extract items, quantities, and customer details (Name/Phone) from images.
+- 📸 **AI Image Scanning**: Uses Gemini 2.5 Flash to extract items, quantities, and customer details.
 - ⚡ **Instant Quote**: Automatically calculates totals based on daily price configurations.
-- 💬 **WhatsApp Automation**:
-  - **Direct API**: Send messages directly without opening the WhatsApp app (requires Meta Developer setup).
-  - **Click-to-Chat**: Auto-redirects to the WhatsApp app with the message pre-filled.
-  - **Share Target**: Receive images directly from the WhatsApp "Share" menu.
+- 💬 **WhatsApp Automation**: Direct API integration and Click-to-Chat automation.
 - 📱 **PWA Support**: Installable on Android/iOS with offline support.
-- 🛠 **Customizable**: Configure daily prices, message headers/footers, and automation settings.
 
-## Setup & Running
+## 🚀 How to Run & Deploy
 
-This application is built using React with ES Modules and requires no build step (`npm run build` is not needed). It uses `importmap` to load dependencies from a CDN.
+This project uses **Vite**.
 
-1. **Clone the repository**
-2. **Serve the files**: You need a static file server to run this locally (due to CORS restrictions with camera/service workers).
-   
-   If you have Python installed:
-   ```bash
-   python3 -m http.server 8000
-   ```
-   Or using Node.js `http-server`:
-   ```bash
-   npx http-server .
-   ```
+### 1. Installation
+Run the following command to install dependencies:
+```bash
+npm install
+```
 
-3. **Open in Browser**: Go to `http://localhost:8000`.
+### 2. Environment Setup
+Create a `.env` file in the root directory and add your Google Gemini API Key:
+```env
+API_KEY=AIzaSy...YourKeyHere
+```
 
-## Configuration
+### 3. Local Development
+To start the app locally:
+```bash
+npm run dev
+```
+Open the link provided (usually `http://localhost:5173`).
 
-To use the AI features, you must have a valid Google Gemini API Key.
-To use the Direct WhatsApp API features, you need a Meta Developer account, Access Token, and Phone Number ID.
-
-## Tech Stack
-
-- **Frontend**: React 19, Tailwind CSS
-- **AI**: Google Gemini API (`gemini-2.5-flash`)
-- **Icons**: Lucide React
+### 4. Build & Deploy
+To create a production-ready build:
+```bash
+npm run build
+```
+The `dist/` folder will contain the static files. You can drag and drop this folder into **Netlify** or upload the repository to **GitHub** and connect it to **Vercel** for automatic deployment.
